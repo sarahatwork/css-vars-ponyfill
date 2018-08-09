@@ -42,7 +42,7 @@
         urlArray.forEach(function(url, i) {
             var parser = document.createElement("a");
             parser.setAttribute("href", url);
-            parser.href = parser.href;
+            parser.href = String(parser.href);
             var isCrossDomain = parser.host !== location.host;
             var isSameProtocol = parser.protocol === location.protocol;
             if (isCrossDomain && typeof XDomainRequest !== "undefined") {
@@ -99,6 +99,12 @@
      * @param {object}   [options.filter] Regular expression used to filter node CSS
      *                   data. Each block of CSS data is tested against the filter,
      *                   and only matching data is included.
+     * @param {object}   [options.parseRuntime=false] Determines if CSS data will
+     *                   be collected from a stylesheet's runtime values instead of
+     *                   its text content. This is required to get accurate CSS data
+     *                   when a stylesheet has been modified using the deleteRule()
+     *                   or insertRule() methods because these modifications will
+     *                   not be reflected in the stylesheet's text content.
      * @param {function} [options.onBeforeSend] Callback before XHR is sent. Passes
      *                   1) the XHR object, 2) source node reference, and 3) the
      *                   source URL as arguments.
@@ -142,6 +148,7 @@
             include: options.include || 'style,link[rel="stylesheet"]',
             exclude: options.exclude || null,
             filter: options.filter || null,
+            parseRuntime: options.parseRuntime || false,
             onBeforeSend: options.onBeforeSend || Function.prototype,
             onSuccess: options.onSuccess || Function.prototype,
             onError: options.onError || Function.prototype,
@@ -256,7 +263,13 @@
                         }
                     });
                 } else if (isStyle) {
-                    handleSuccess(node.textContent, i, node, location.href);
+                    var cssText = node.textContent;
+                    if (settings.parseRuntime) {
+                        cssText = Array.apply(null, node.sheet.cssRules).map(function(rule) {
+                            return rule.cssText;
+                        }).join("");
+                    }
+                    handleSuccess(cssText, i, node, location.href);
                 } else {
                     cssArray[i] = "";
                     handleComplete();
@@ -898,6 +911,7 @@
         fixNestedCalc: true,
         onlyLegacy: true,
         onlyVars: false,
+        parseRuntime: false,
         preserve: false,
         silent: false,
         updateDOM: true,
@@ -942,6 +956,12 @@
      * @param {boolean}  [options.onlyVars=false] Determines if CSS rulesets and
      *                   declarations without a custom property value should be
      *                   removed from the ponyfill-generated CSS
+     * @param {object}   [options.parseRuntime=false] Determines if CSS data will
+     *                   be collected from a stylesheet's runtime values instead of
+     *                   its text content. This is required to get accurate CSS data
+     *                   when a stylesheet has been modified using the deleteRule()
+     *                   or insertRule() methods because these modifications will
+     *                   not be reflected in the stylesheet's text content.
      * @param {boolean}  [options.preserve=false] Determines if the original CSS
      *                   custom property declaration will be retained in the
      *                   ponyfill-generated CSS.
@@ -1039,6 +1059,7 @@
                     include: settings.include,
                     exclude: "#" + styleNodeId + (settings.exclude ? "," + settings.exclude : ""),
                     filter: settings.onlyVars ? regex.cssVars : null,
+                    parseRuntime: settings.parseRuntime,
                     onBeforeSend: settings.onBeforeSend,
                     onSuccess: function onSuccess(cssText, node, url) {
                         var returnVal = settings.onSuccess(cssText, node, url);

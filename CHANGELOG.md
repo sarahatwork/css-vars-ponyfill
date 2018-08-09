@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.10.0
+
+*Unreleased*
+
+- Added `options.parseRuntime` for collected CSS data from runtime values
+
 ## 1.9.0
 
 *2018-08-07*

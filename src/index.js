@@ -16,6 +16,7 @@ const defaults = {
     fixNestedCalc: true,  // transformCss
     onlyLegacy   : true,  // cssVars
     onlyVars     : false, // cssVars, transformCss
+    parseRuntime : false, // getCssData
     preserve     : false, // transformCss
     silent       : false, // cssVars
     updateDOM    : true,  // cssVars
@@ -69,6 +70,12 @@ let cssVarsObserver = null;
  * @param {boolean}  [options.onlyVars=false] Determines if CSS rulesets and
  *                   declarations without a custom property value should be
  *                   removed from the ponyfill-generated CSS
+ * @param {object}   [options.parseRuntime=false] Determines if CSS data will
+ *                   be collected from a stylesheet's runtime values instead of
+ *                   its text content. This is required to get accurate CSS data
+ *                   when a stylesheet has been modified using the deleteRule()
+ *                   or insertRule() methods because these modifications will
+ *                   not be reflected in the stylesheet's text content.
  * @param {boolean}  [options.preserve=false] Determines if the original CSS
  *                   custom property declaration will be retained in the
  *                   ponyfill-generated CSS.
@@ -186,6 +193,7 @@ function cssVars(options = {}) {
                 // filter is used in the parser to remove individual
                 // declarations.
                 filter : settings.onlyVars ? regex.cssVars : null,
+                parseRuntime: settings.parseRuntime,
                 onBeforeSend: settings.onBeforeSend,
                 onSuccess(cssText, node, url) {
                     const returnVal = settings.onSuccess(cssText, node, url);

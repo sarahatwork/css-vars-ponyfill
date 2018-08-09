@@ -194,6 +194,7 @@ Values will be updated in both legacy and modern browsers:
 - [fixNestedCalc](#optionsfixnestedcalc)
 - [onlyLegacy](#optionsonlylegacy)
 - [onlyVars](#optionsonlyvars)
+- [parseRuntime](#optionsparseruntime)
 - [preserve](#optionspreserve)
 - [silent](#optionssilent)
 - [updateDOM](#optionsupdatedom)
@@ -216,6 +217,7 @@ cssVars({
   fixNestedCalc: true,
   onlyLegacy   : true,
   onlyVars     : false,
+  parseRuntime : false,
   preserve     : false,
   silent       : false,
   updateDOM    : true,
@@ -423,6 +425,25 @@ p {
   padding: 10px;
   color: red;
 }
+```
+
+### options.parseRuntime
+
+- Type: `boolean`
+- Default: `false`
+
+Determines how CSS data will be collected from `<style>` nodes.
+
+When `false`, CSS data is collected from each `<style>` node by reading its `textContent` value. When `true`, CSS data is collected from runtime values by iterating over the [`CSSRuleList`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRuleList) object and concatenating all [`CSSRule.cssText`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRule/cssText) values into a single string.
+
+Collecting data from runtime values is substantially slower, but it is necessary to obtain accurate CSS data when a stylesheet has been modified using the [`deleteRule()`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/deleteRule) or [`insertRule()`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/insertRule) methods because these modifications aren't reflected in the `textContent` value.
+
+**Example**
+
+```javascript
+cssVars({
+  parseRuntime: false // default
+});
 ```
 
 ### options.preserve

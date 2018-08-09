@@ -229,6 +229,31 @@ describe('css-vars', function() {
             });
         });
 
+        it('parseRuntime', function() {
+            const styleElm  = createElmsWrap({ tag: 'style' })[0];
+
+            cssVars({
+                include     : '[data-test]',
+                onlyLegacy  : false,
+                parseRuntime: false,
+                onComplete(cssText, styleNode) {
+                    expect(cssText, 'Before insertRule()').to.equal('');
+                }
+            });
+
+            styleElm.sheet.insertRule(':root { --color: red; }', 0);
+            styleElm.sheet.insertRule('p { color: var(--color); }', 0);
+
+            cssVars({
+                include     : '[data-test]',
+                onlyLegacy  : false,
+                parseRuntime: true,
+                onComplete(cssText, styleNode) {
+                    expect(cssText, 'After insertRule()').to.equal('p{color:red;}');
+                }
+            });
+        });
+
         describe('preserve', function() {
             it('true (passed to transform-css)', function() {
                 const styleCss  = ':root{--color:red;}p{color:var(--color);}';
